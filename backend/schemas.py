@@ -13,7 +13,9 @@ class UserLogin(BaseModel):
 
 class Token(BaseModel):
     access_token: str
-    token_type: str = "bearer"
+    token_type: str
+    role: str
+
 class HospitalCreate(BaseModel):
     name: str
     username: str
