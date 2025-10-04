@@ -1,13 +1,25 @@
 import React from "react";
-import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  Navigate,
+} from "react-router-dom";
 import Login from "./pages/Auth/Login";
 import PrivateRoute from "./Components/PrivateRoute";
 import SuperadminHospitalPage from "./pages/hospital/dashboard";
+import DoctorsListPage from "./pages/doctors/[id]/page";
 
 // Placeholder dashboards
-const HospitalDashboard = () => <h1 className="text-center mt-10 text-2xl">Hospital Dashboard</h1>;
-const DoctorDashboard = () => <h1 className="text-center mt-10 text-2xl">Doctor Dashboard</h1>;
-const PatientDashboard = () => <h1 className="text-center mt-10 text-2xl">Patient Dashboard</h1>;
+const HospitalDashboard = () => (
+  <h1 className="text-center mt-10 text-2xl">Hospital Dashboard</h1>
+);
+const DoctorDashboard = () => (
+  <h1 className="text-center mt-10 text-2xl">Doctor Dashboard</h1>
+);
+const PatientDashboard = () => (
+  <h1 className="text-center mt-10 text-2xl">Patient Dashboard</h1>
+);
 
 function App() {
   return (
@@ -22,6 +34,14 @@ function App() {
           element={
             <PrivateRoute role="superadmin">
               <SuperadminHospitalPage />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/doctors/:id"
+          element={
+            <PrivateRoute role="superadmin">
+              <DoctorsListPage />
             </PrivateRoute>
           }
         />

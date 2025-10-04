@@ -1,0 +1,14 @@
+<!-- Doctor placeholder SVG -->
+<svg width="200" height="200" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="200" height="200" fill="#f1f5f9"/>
+  <circle cx="100" cy="80" r="30" fill="#cbd5e1"/>
+  <rect x="70" y="110" width="60" height="70" rx="30" fill="#cbd5e1"/>
+  <circle cx="100" cy="75" r="20" fill="#94a3b8"/>
+  <rect x="80" y="90" width="40" height="30" rx="15" fill="#94a3b8"/>
+  <!-- Stethoscope -->
+  <path d="M90 120 Q85 125 85 130 Q85 135 90 140" stroke="#3b82f6" stroke-width="3" fill="none"/>
+  <circle cx="85" cy="142" r="4" fill="#3b82f6"/>
+  <path d="M110 120 Q115 125 115 130 Q115 135 110 140" stroke="#3b82f6" stroke-width="3" fill="none"/>
+  <circle cx="115" cy="142" r="4" fill="#3b82f6"/>
+  <path d="M90 120 Q100 115 110 120" stroke="#3b82f6" stroke-width="3" fill="none"/>
+</svg>

@@ -2,43 +2,93 @@
 
 import type React from "react"
 import { useState, useEffect } from "react"
-import { Building2, Plus, ArrowRight, X } from "lucide-react"
+import { useParams, useNavigate } from "react-router-dom"
+import { Plus, Mail, Phone, ArrowLeft, X, Stethoscope } from "lucide-react"
 
-interface Hospital {
+interface Doctor {
   id: number
   name: string
+  email: string
+  phone: string
+  specialization: string
   image?: string
 }
 
-const MOCK_HOSPITALS: Hospital[] = [
-  { id: 1, name: "City General Hospital", image: "/hospital-placeholder.svg" },
-  { id: 2, name: "St. Mary's Medical Center", image: "/hospital-placeholder.svg" },
-  { id: 3, name: "Regional Healthcare Institute", image: "/hospital-placeholder.svg" },
-  { id: 4, name: "Metro Community Hospital", image: "/hospital-placeholder.svg" },
-  { id: 5, name: "Central Medical Complex", image: "/hospital-placeholder.svg" },
+const MOCK_DOCTORS: Doctor[] = [
+  {
+    id: 1,
+    name: "Dr. Sarah Johnson",
+    email: "sarah.johnson@hospital.com",
+    phone: "+1 (555) 123-4567",
+    specialization: "Cardiology",
+    image: "/doctor-placeholder.svg",
+  },
+  {
+    id: 2,
+    name: "Dr. Michael Chen",
+    email: "michael.chen@hospital.com",
+    phone: "+1 (555) 234-5678",
+    specialization: "Neurology",
+    image: "/doctor-placeholder.svg",
+  },
+  {
+    id: 3,
+    name: "Dr. Emily Rodriguez",
+    email: "emily.rodriguez@hospital.com",
+    phone: "+1 (555) 345-6789",
+    specialization: "Pediatrics",
+    image: "/doctor-placeholder.svg",
+  },
+  {
+    id: 4,
+    name: "Dr. James Wilson",
+    email: "james.wilson@hospital.com",
+    phone: "+1 (555) 456-7890",
+    specialization: "Orthopedics",
+    image: "/doctor-placeholder.svg",
+  },
+  {
+    id: 5,
+    name: "Dr. Priya Patel",
+    email: "priya.patel@hospital.com",
+    phone: "+1 (555) 567-8901",
+    specialization: "Dermatology",
+    image: "/doctor-placeholder.svg",
+  },
+  {
+    id: 6,
+    name: "Dr. Robert Martinez",
+    email: "robert.martinez@hospital.com",
+    phone: "+1 (555) 678-9012",
+    specialization: "General Surgery",
+    image: "/doctor-placeholder.svg",
+  },
 ]
 
 const USE_MOCK_DATA = true
 
-export default function SuperadminHospitalPage() {
-  const [hospitals, setHospitals] = useState<Hospital[]>([])
+export default function DoctorsListPage() {
+  const { id: hospitalId } = useParams()
+  const navigate = useNavigate()
+  const [doctors, setDoctors] = useState<Doctor[]>([])
   const [showModal, setShowModal] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [hospitalName, setHospitalName] = useState("City General Hospital")
   const [formData, setFormData] = useState({
     name: "",
-    username: "",
     email: "",
-    password: "",
+    phone: "",
+    specialization: "",
   })
 
-  // Fetch hospitals
+  // Fetch doctors
   useEffect(() => {
-    const fetchHospitals = async () => {
+    const fetchDoctors = async () => {
       if (USE_MOCK_DATA) {
         // Simulate API delay
         setTimeout(() => {
-          setHospitals(MOCK_HOSPITALS)
+          setDoctors(MOCK_DOCTORS)
           setIsLoading(false)
         }, 800)
         return
@@ -47,46 +97,52 @@ export default function SuperadminHospitalPage() {
       // Real API call - uncomment and use this in production
       try {
         const token = localStorage.getItem("token")
-        const res = await fetch("http://localhost:8000/hospitals/g", {
+        const res = await fetch(`http://localhost:8000/hospitals/${hospitalId}/doctors`, {
           headers: { Authorization: `Bearer ${token}` },
         })
 
         if (!res.ok) {
-          throw new Error("Failed to fetch hospitals")
+          throw new Error("Failed to fetch doctors")
         }
 
         const data = await res.json()
-        setHospitals(data)
+        setDoctors(data || [])
+        setHospitalName(`Hospital ${hospitalId}`)
       } catch (err) {
         console.error(err)
-        setHospitals([])
+        setDoctors([])
       } finally {
         setIsLoading(false)
       }
     }
 
-    fetchHospitals()
-  }, [])
+    fetchDoctors()
+  }, [hospitalId])
+
+  const handleBack = () => {
+    // Navigate back to superadmin hospitals dashboard
+    navigate('/dashboard/superadmin')
+  }
 
   // Form input change
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value })
   }
 
-  // Create hospital
+  // Create doctor
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     setIsSubmitting(true)
 
     if (USE_MOCK_DATA) {
       setTimeout(() => {
-        const newHospital = {
-          id: hospitals.length + 1,
-          name: formData.name,
-          image: "/hospital-placeholder.svg",
+        const newDoctor = {
+          id: doctors.length + 1,
+          ...formData,
+          image: "/doctor-placeholder.svg",
         }
-        setHospitals([...hospitals, newHospital])
-        setFormData({ name: "", username: "", email: "", password: "" })
+        setDoctors([...doctors, newDoctor])
+        setFormData({ name: "", email: "", phone: "", specialization: "" })
         setShowModal(false)
         setIsSubmitting(false)
       }, 1000)
@@ -97,7 +153,7 @@ export default function SuperadminHospitalPage() {
     const token = localStorage.getItem("token")
 
     try {
-      const res = await fetch("http://localhost:8000/hospitals/", {
+      const res = await fetch(`http://localhost:8000/hospitals/${hospitalId}/doctors`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -108,43 +164,52 @@ export default function SuperadminHospitalPage() {
 
       const data = await res.json()
       if (res.ok) {
-        setHospitals([...hospitals, { id: data.hospital_id, name: formData.name, image: "/hospital-placeholder.svg" }])
-        setFormData({ name: "", username: "", email: "", password: "" })
+        setDoctors([
+          ...doctors,
+          {
+            id: data.doctor_id,
+            ...formData,
+            image: "/doctor-placeholder.svg",
+          },
+        ])
+        setFormData({ name: "", email: "", phone: "", specialization: "" })
         setShowModal(false)
       } else {
-        alert(data.detail || data.msg || "Error creating hospital")
+        alert(data.detail || data.msg || "Error creating doctor")
       }
     } catch (err) {
       console.error(err)
-      alert("Error creating hospital")
+      alert("Error creating doctor")
     } finally {
       setIsSubmitting(false)
     }
-  }
-
-  const handleHospitalClick = (hospitalId: number) => {
-    // Navigate to doctors page for this hospital
-    // For React Router, use: navigate(`/doctors/${hospitalId}`)
-    // For standard navigation, use: window.location.href = `/doctors/${hospitalId}`
-    window.location.href = `/doctors/${hospitalId}`
   }
 
   return (
     <div className="min-h-screen bg-slate-50">
       <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
         {/* Header */}
-        <div className="mb-8 flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold tracking-tight text-slate-900">Hospital Management</h1>
-            <p className="mt-2 text-sm text-slate-600">Manage and monitor all registered hospitals</p>
-          </div>
+        <div className="mb-8">
           <button
-            onClick={() => setShowModal(true)}
-            className="inline-flex items-center gap-2 rounded-lg bg-slate-900 px-5 py-2.5 text-sm font-medium text-white transition-all hover:bg-slate-800 hover:shadow-lg active:scale-95"
+            onClick={handleBack}
+            className="mb-4 inline-flex items-center gap-2 text-sm font-medium text-slate-600 transition-colors hover:text-slate-900"
           >
-            <Plus className="h-4 w-4" />
-            Create Hospital
+            <ArrowLeft className="h-4 w-4" />
+            Back to Hospitals
           </button>
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-3xl font-bold tracking-tight text-slate-900">{hospitalName}</h1>
+              <p className="mt-2 text-sm text-slate-600">Manage doctors and medical staff</p>
+            </div>
+            <button
+              onClick={() => setShowModal(true)}
+              className="inline-flex items-center gap-2 rounded-lg bg-slate-900 px-5 py-2.5 text-sm font-medium text-white transition-all hover:bg-slate-800 hover:shadow-lg active:scale-95"
+            >
+              <Plus className="h-4 w-4" />
+              Add Doctor
+            </button>
+          </div>
         </div>
 
         {/* Content */}
@@ -152,51 +217,55 @@ export default function SuperadminHospitalPage() {
           <div className="flex min-h-[400px] items-center justify-center">
             <div className="text-center">
               <div className="mx-auto h-8 w-8 animate-spin rounded-full border-4 border-slate-200 border-t-slate-900" />
-              <p className="mt-4 text-sm text-slate-600">Loading hospitals...</p>
+              <p className="mt-4 text-sm text-slate-600">Loading doctors...</p>
             </div>
           </div>
-        ) : hospitals.length === 0 ? (
+        ) : doctors.length === 0 ? (
           <div className="rounded-xl border-2 border-dashed border-slate-300 bg-white">
             <div className="flex min-h-[400px] flex-col items-center justify-center py-12">
               <div className="rounded-full bg-slate-100 p-4">
-                <Building2 className="h-8 w-8 text-slate-600" />
+                <Stethoscope className="h-8 w-8 text-slate-600" />
               </div>
-              <h3 className="mt-4 text-lg font-semibold text-slate-900">No hospitals yet</h3>
-              <p className="mt-2 text-center text-sm text-slate-600">Get started by creating your first hospital</p>
+              <h3 className="mt-4 text-lg font-semibold text-slate-900">No doctors yet</h3>
+              <p className="mt-2 text-center text-sm text-slate-600">Get started by adding your first doctor</p>
               <button
                 onClick={() => setShowModal(true)}
                 className="mt-6 inline-flex items-center gap-2 rounded-lg bg-slate-900 px-5 py-2.5 text-sm font-medium text-white transition-all hover:bg-slate-800 hover:shadow-lg active:scale-95"
               >
                 <Plus className="h-4 w-4" />
-                Create Hospital
+                Add Doctor
               </button>
             </div>
           </div>
         ) : (
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {hospitals.map((hospital) => (
+            {doctors.map((doctor) => (
               <div
-                key={hospital.id}
-                onClick={() => handleHospitalClick(hospital.id)}
-                className="group cursor-pointer overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm transition-all hover:shadow-xl"
+                key={doctor.id}
+                className="group overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm transition-all hover:shadow-xl"
               >
-                <div className="relative aspect-video overflow-hidden bg-slate-100">
+                <div className="relative aspect-square overflow-hidden bg-slate-100">
                   <img
-                    src={hospital.image || `/placeholder.svg?height=200&width=400&query=hospital+building`}
-                    alt={hospital.name}
+                    src={doctor.image || "/doctor-placeholder.svg"}
+                    alt={doctor.name}
                     className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 transition-opacity group-hover:opacity-100" />
                 </div>
                 <div className="p-6">
-                  <div className="flex items-center justify-between">
-                    <div className="flex-1">
-                      <h3 className="text-lg font-semibold text-slate-900 transition-colors group-hover:text-slate-700">
-                        {hospital.name}
-                      </h3>
-                      <p className="mt-1 text-sm text-slate-600">Hospital ID: {hospital.id}</p>
+                  <div className="mb-3">
+                    <h3 className="text-lg font-semibold text-slate-900">{doctor.name}</h3>
+                    <p className="mt-1 text-sm font-medium text-slate-600">{doctor.specialization}</p>
+                  </div>
+                  <div className="space-y-2">
+                    <div className="flex items-center gap-2 text-sm text-slate-600">
+                      <Mail className="h-4 w-4 flex-shrink-0" />
+                      <span className="truncate">{doctor.email}</span>
                     </div>
-                    <ArrowRight className="h-5 w-5 text-slate-400 transition-all group-hover:translate-x-1 group-hover:text-slate-900" />
+                    <div className="flex items-center gap-2 text-sm text-slate-600">
+                      <Phone className="h-4 w-4 flex-shrink-0" />
+                      <span>{doctor.phone}</span>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -215,9 +284,9 @@ export default function SuperadminHospitalPage() {
             {/* Header */}
             <div className="mb-6 flex items-start justify-between">
               <div>
-                <h2 className="text-xl font-semibold text-slate-900">Create New Hospital</h2>
+                <h2 className="text-xl font-semibold text-slate-900">Add New Doctor</h2>
                 <p className="mt-1 text-sm text-slate-600">
-                  Add a new hospital to the system. Fill in all required information.
+                  Add a new doctor to {hospitalName}. Fill in all required information.
                 </p>
               </div>
               <button
@@ -232,13 +301,13 @@ export default function SuperadminHospitalPage() {
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="space-y-2">
                 <label htmlFor="name" className="block text-sm font-medium text-slate-900">
-                  Hospital Name
+                  Doctor Name
                 </label>
                 <input
                   id="name"
                   name="name"
                   type="text"
-                  placeholder="Enter hospital name"
+                  placeholder="Dr. John Smith"
                   value={formData.name}
                   onChange={handleChange}
                   required
@@ -247,15 +316,15 @@ export default function SuperadminHospitalPage() {
               </div>
 
               <div className="space-y-2">
-                <label htmlFor="username" className="block text-sm font-medium text-slate-900">
-                  Username
+                <label htmlFor="specialization" className="block text-sm font-medium text-slate-900">
+                  Specialization
                 </label>
                 <input
-                  id="username"
-                  name="username"
+                  id="specialization"
+                  name="specialization"
                   type="text"
-                  placeholder="Enter username"
-                  value={formData.username}
+                  placeholder="Cardiology, Neurology, etc."
+                  value={formData.specialization}
                   onChange={handleChange}
                   required
                   className="w-full rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-900/10"
@@ -270,7 +339,7 @@ export default function SuperadminHospitalPage() {
                   id="email"
                   name="email"
                   type="email"
-                  placeholder="hospital@example.com"
+                  placeholder="doctor@hospital.com"
                   value={formData.email}
                   onChange={handleChange}
                   required
@@ -279,15 +348,15 @@ export default function SuperadminHospitalPage() {
               </div>
 
               <div className="space-y-2">
-                <label htmlFor="password" className="block text-sm font-medium text-slate-900">
-                  Password
+                <label htmlFor="phone" className="block text-sm font-medium text-slate-900">
+                  Phone Number
                 </label>
                 <input
-                  id="password"
-                  name="password"
-                  type="password"
-                  placeholder="Enter secure password"
-                  value={formData.password}
+                  id="phone"
+                  name="phone"
+                  type="tel"
+                  placeholder="+1 (555) 123-4567"
+                  value={formData.phone}
                   onChange={handleChange}
                   required
                   className="w-full rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-900/10"
@@ -311,10 +380,10 @@ export default function SuperadminHospitalPage() {
                   {isSubmitting ? (
                     <span className="flex items-center justify-center gap-2">
                       <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
-                      Creating...
+                      Adding...
                     </span>
                   ) : (
-                    "Create Hospital"
+                    "Add Doctor"
                   )}
                 </button>
               </div>
